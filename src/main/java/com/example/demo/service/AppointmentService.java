@@ -1,8 +1,11 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.AppointmentDTO;
+import com.example.demo.dto.AppointmentRequestDTO;
 import com.example.demo.entity.Appointment;
 import com.example.demo.entity.Doctor;
 import com.example.demo.entity.Patient;
+import com.example.demo.mapper.AppointmentMapper;
 import com.example.demo.repository.AppointmentRepository;
 import com.example.demo.repository.DoctorRepository;
 import com.example.demo.repository.PatientRepository;
@@ -26,32 +29,32 @@ public class AppointmentService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
 
-    public List<Appointment> getAllAppointments(){
-        return appointmentRepository.findAll();
+    public List<AppointmentDTO> getAllAppointments(){
+        return appointmentRepository.findAll().stream().map(AppointmentMapper::toDTO).collect(Collectors.toList());
     }
-    public Page<Appointment> getAllAppointments(Pageable pageable){
-        return appointmentRepository.findAll(pageable);
+    public Page<AppointmentDTO> getAllAppointments(Pageable pageable){
+        return appointmentRepository.findAll(pageable).map(AppointmentMapper::toDTO);
     }
-    public Optional<Appointment> getAppointmentById(Long id){
-        return appointmentRepository.findById(id);
+    public Optional<AppointmentDTO> getAppointmentById(Long id){
+        return appointmentRepository.findById(id).map(AppointmentMapper::toDTO);
     }
-    public Optional<Appointment> getAppointmentWithDetails(Long id){
-        return appointmentRepository.findByIdWithDetails(id);
+    public Optional<AppointmentDTO> getAppointmentWithDetails(Long id){
+        return appointmentRepository.findByIdWithDetails(id).map(AppointmentMapper::toDTO);
     }
-    public List<Appointment> getAppointmentsByPatient(Long patientId){
-        return appointmentRepository.findByPatientId(patientId);
+    public List<AppointmentDTO> getAppointmentsByPatient(Long patientId){
+        return appointmentRepository.findByPatientId(patientId).stream().map(AppointmentMapper::toDTO).collect(Collectors.toList());
     }
-    public List<Appointment> getAppointmentByDoctor(Long doctorId){
-        return appointmentRepository.findByDoctorId(doctorId);
+    public List<AppointmentDTO> getAppointmentByDoctor(Long doctorId){
+        return appointmentRepository.findByDoctorId(doctorId).stream().map(AppointmentMapper::toDTO).collect(Collectors.toList());
     }
-    public List<Appointment> getUpcomingAppointments(){
-        return appointmentRepository.findUpcomingAppointments(LocalDateTime.now());
+    public List<AppointmentDTO> getUpcomingAppointments(){
+        return appointmentRepository.findUpcomingAppointments(LocalDateTime.now()).stream().map(AppointmentMapper::toDTO).collect(Collectors.toList());
     }
-    public List<Appointment> getAppointmentsByDateRange(LocalDateTime start, LocalDateTime end){
-        return appointmentRepository.findAppointmentTimeBetween(start,end);
+    public List<AppointmentDTO> getAppointmentsByDateRange(LocalDateTime start, LocalDateTime end){
+        return appointmentRepository.findByAppointmentTimeBetween(start,end).stream().map(AppointmentMapper::toDTO).collect(Collectors.toList());
     }
-    public List<Appointment> getDoctorAppointmentByDateRange(Long doctorId, LocalDateTime start, LocalDateTime end){
-        return appointmentRepository.findByDoctorAndDateRange(doctorId,start,end);
+    public List<AppointmentDTO> getDoctorAppointmentByDateRange(Long doctorId, LocalDateTime start, LocalDateTime end){
+        return appointmentRepository.findByDoctorAndDateRange(doctorId,start,end).stream().map(AppointmentMapper::toDTO).collect(Collectors.toList());
     }
     public Map<String,Long> getAppointmentCountByDoctor(){
         List<Object[]> results = appointmentRepository.countAppointmentByDoctor();
@@ -59,37 +62,35 @@ public class AppointmentService {
     }
 
     @Transactional
-    public Appointment createNewAppointment(Appointment appointment, Long doctorId, Long patientId){
+    public AppointmentDTO createNewAppointment(AppointmentRequestDTO requestDTO, Long doctorId, Long patientId){
         Doctor doctor = doctorRepository.findById(doctorId).orElseThrow();
         Patient patient = patientRepository.findById(patientId).orElseThrow();
 
-        if(appointment.getId() != null){
-            throw new IllegalArgumentException("Appointment is not correct");
-        }
-
+        Appointment appointment = AppointmentMapper.toEntity(requestDTO);
         appointment.setPatient(patient);
         appointment.setDoctor(doctor);
 
-        patient.getAppointments().add(appointment);
-        return appointmentRepository.save(appointment);
+        Appointment saveAppointment = appointmentRepository.save(appointment);
+        return AppointmentMapper.toDTO(saveAppointment);
     }
     @Transactional
-    public Appointment reAssignAppointmentToAnotherDoctor(Long appointmentId, Long doctorId){
+    public AppointmentDTO reAssignAppointmentToAnotherDoctor(Long appointmentId, Long doctorId){
         Appointment appointment = appointmentRepository.findById(appointmentId).orElseThrow();
         Doctor doctor = doctorRepository.findById(doctorId).orElseThrow();
 
         appointment.setDoctor(doctor);
 
-        doctor.getAppointments().add(appointment);
-        return appointment;
+        Appointment updatedAppointment = appointmentRepository.save(appointment);
+        return AppointmentMapper.toDTO(updatedAppointment);
     }
     @Transactional
-    public Appointment updateAppointment(Long id, Appointment appointmentDetails){
+    public AppointmentDTO updateAppointment(Long id, AppointmentRequestDTO requestDTO){
         Appointment appointment = appointmentRepository.findById(id).orElseThrow();
-        appointment.setAppointmentTime(appointmentDetails.getAppointmentTime());
-        appointment.setReason(appointmentDetails.getReason());
+        appointment.setAppointmentTime(requestDTO.getAppointmentTime());
+        appointment.setReason(requestDTO.getReason());
 
-        return appointmentRepository.save(appointment);
+        Appointment updatedAppointment = appointmentRepository.save(appointment);
+        return AppointmentMapper.toDTO(updatedAppointment);
     }
     @Transactional
     public void deleteAppointment(Long id){

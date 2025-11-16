@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 import com.example.demo.entity.type.BloodGroupType;
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -13,9 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@ToString
 @Getter
 @Setter
+@ToString(exclude = {"insurance", "appointments", "birthdate", "createdAt"})
+@EqualsAndHashCode(exclude = {"insurance", "appointments"})
 @Table(
         name = "patient",
         uniqueConstraints = {
@@ -35,7 +37,7 @@ public class Patient {
     @Column(nullable = false,length = 40)
     private String name;
 
-    @ToString.Exclude
+
     private LocalDate birthdate;
 
     private String email;
@@ -47,14 +49,12 @@ public class Patient {
 
     @CreationTimestamp
     @Column(updatable = false)
-    @ToString.Exclude
     private LocalDateTime createdAt;
 
     @OneToOne(cascade = {CascadeType.ALL}, orphanRemoval = true)
     @JoinColumn(name = "patient_insurance_id")
-    @ToString.Exclude
     private Insurance insurance;
 
-    @OneToMany(mappedBy = "patient", cascade = {CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "patient", cascade = {CascadeType.REMOVE}, orphanRemoval = true)
     private List<Appointment> appointments = new ArrayList<>();
 }

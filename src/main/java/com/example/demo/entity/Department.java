@@ -1,16 +1,17 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"headDoctor", "doctors"})
+@EqualsAndHashCode(exclude = {"headDoctor", "doctors"})
 @AllArgsConstructor
 @NoArgsConstructor
 

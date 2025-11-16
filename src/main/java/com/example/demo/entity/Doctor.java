@@ -1,16 +1,16 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"appointments", "departments"})
+@EqualsAndHashCode(exclude = {"appointments", "departments"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -29,9 +29,9 @@ public class Doctor {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @OneToMany(mappedBy = "doctor", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "doctor")
     private List<Appointment> appointments;
 
-    @ManyToMany(mappedBy = "doctors", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "doctors")
     private Set<Department> departments = new HashSet<>();
 }

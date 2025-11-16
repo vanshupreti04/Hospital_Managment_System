@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PatientRepository extends JpaRepository<Patient,Long> {
@@ -23,7 +23,7 @@ public interface PatientRepository extends JpaRepository<Patient,Long> {
     List<Patient> findByBloodGroup(@Param("bloodgroup") BloodGroupType bloodgroup);
 
     @Query("select p from Patient p where p.birthdate > :birthdate")
-    List<Patient> findByBornAfterDate(@Param("birthdate")LocalDate birthdate);
+    List<Patient> findByBornAfterDate(@Param("birthdate") LocalDateTime birthdate);
 
     @Query("select new com.example.demo.dto.BloodGroupCountResponseEntity(p.bloodgroup, Count(p)) from Patient p group by p.bloodgroup")
 //    List<Object[]> countEachBloodGroupType();

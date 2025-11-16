@@ -1,17 +1,17 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"patient"})
+@EqualsAndHashCode(exclude = {"patient"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

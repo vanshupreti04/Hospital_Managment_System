@@ -1,14 +1,18 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.DepartmentDTO;
+import com.example.demo.dto.DepartmentRequestDTO;
+import com.example.demo.dto.DoctorDTO;
 import com.example.demo.entity.Department;
 import com.example.demo.entity.Doctor;
+import com.example.demo.mapper.DepartmentMapper;
+import com.example.demo.mapper.DoctorMapper;
 import com.example.demo.repository.DepartmentRepository;
 import com.example.demo.repository.DoctorRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.swing.plaf.OptionPaneUI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,47 +25,49 @@ public class DepartmentService {
     private final DepartmentRepository departmentRepository;
     private final DoctorRepository doctorRepository;
 
-    public List<Department> getAllDepartments(){
-        return departmentRepository.findAll();
+    public List<DepartmentDTO> getAllDepartments(){
+        return departmentRepository.findAll().stream().map(DepartmentMapper::toDTO).collect(Collectors.toList());
     }
-    public Optional<Department> getDepartmentById(Long id){
-        return departmentRepository.findById(id);
+    public Optional<DepartmentDTO> getDepartmentById(Long id){
+        return departmentRepository.findById(id).map(DepartmentMapper::toDTO);
     }
-    public Optional<Department> getDepartmentByName(String name){
-        return departmentRepository.findByName(name);
+    public Optional<DepartmentDTO> getDepartmentByName(String name){
+        return departmentRepository.findByName(name).map(DepartmentMapper::toDTO);
     }
-    public List<Department> searchDepartments(String name){
-        return departmentRepository.findByNameContainingIgnoreCase(name);
+    public List<DepartmentDTO> searchDepartments(String name){
+        return departmentRepository.findByNameContainingIgnoreCase(name).stream().map(DepartmentMapper::toDTO).collect(Collectors.toList());
     }
-    public List<Department> getDepartmentsWithoutHeadDoctor(){
-        return departmentRepository.findDepartmentsWithoutHeadDoctor();
+    public List<DepartmentDTO> getDepartmentsWithoutHeadDoctor(){
+        return departmentRepository.findDepartmentsWithoutHeadDoctor().stream().map(DepartmentMapper::toDTO).collect(Collectors.toList());
     }
-    public List<Doctor> getDoctorWithoutDepartment(){
-        return departmentRepository.findDoctorsWithoutDepartment();
+    public List<DoctorDTO> getDoctorWithoutDepartment(){
+        return departmentRepository.findDoctorsWithoutDepartment().stream().map(DoctorMapper::toDTO).collect(Collectors.toList());
     }
-    public Map<String,Integer> getDoctorCountPerDepartment(){
+    public Map<String, Integer> getDoctorCountPerDepartment(){
         List<Object[]> results = departmentRepository.countDoctorsPerDepartment();
-        return results.stream().collect(Collectors.toMap(obj-> (String) obj[0], obj-> ((Long) obj[1]).intValue()));
+        return results.stream().collect(Collectors.toMap(obj-> (String) obj[0], obj-> ((Integer) obj[1])));
     }
     @Transactional
-    public Department createDepartment(Department department){
-        return departmentRepository.save(department);
+    public DepartmentDTO createDepartment(DepartmentRequestDTO requestDTO){
+        Department department = DepartmentMapper.toEntity(requestDTO);
+        Department savedDepartment = departmentRepository.save(department);
+        return DepartmentMapper.toDTO(savedDepartment);
     }
     @Transactional
-    public Department updateDepartment(Long id, Department departmentDetails){
+    public DepartmentDTO updateDepartment(Long id, DepartmentRequestDTO requestDTO){
         Department department = departmentRepository.findById(id).orElseThrow(()-> new RuntimeException("Department is not found with this id"));
-        department.setName(departmentDetails.getName());
-        department.setHeadDoctor(departmentDetails.getHeadDoctor());
-
-        return departmentRepository.save((department));
+        department.setName(requestDTO.getName());
+        Department updatedDepartment = departmentRepository.save(department);
+        return DepartmentMapper.toDTO(updatedDepartment);
     }
     @Transactional
-    public Department setHeadDoctor(Long departmentId, Long doctorId){
+    public DepartmentDTO setHeadDoctor(Long departmentId, Long doctorId){
         Department department = departmentRepository.findById(departmentId).orElseThrow(()-> new RuntimeException("Department is not found with this id"));
         Doctor doctor = doctorRepository.findById(doctorId).orElseThrow(() -> new RuntimeException("Doctor Not Found"));
 
         department.setHeadDoctor(doctor);
-        return departmentRepository.save(department);
+        Department savedDepartment = departmentRepository.save(department);
+        return DepartmentMapper.toDTO(savedDepartment);
     }
     @Transactional
     public void deleteDepartment(Long id){

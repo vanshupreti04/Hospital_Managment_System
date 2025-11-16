@@ -5,11 +5,13 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString
+@Getter
+@Setter
+@ToString(exclude = {"patient", "doctor"})
+@EqualsAndHashCode(exclude = {"patient", "doctor"})
 @Entity
 public class Appointment {
     @Id
@@ -23,12 +25,10 @@ public class Appointment {
     private String reason;
 
     @ManyToOne
-    @ToString.Exclude
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
     @ManyToOne
-    @ToString.Exclude
     @JoinColumn(name = "doctor_id", nullable = false)
     private Doctor doctor;
 }

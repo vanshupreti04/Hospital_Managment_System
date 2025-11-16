@@ -17,7 +17,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     List<Appointment> findByPatientId(Long patientId);
     List<Appointment> findByDoctorId(Long doctorId);
-    List<Appointment> findAppointmentTimeBetween(LocalDateTime start, LocalDateTime end);
+    List<Appointment> findByAppointmentTimeBetween(LocalDateTime start, LocalDateTime end);
 
     @Query("SELECT a FROM Appointment a WHERE a.appointmentTime > :currentTime ORDER BY a.appointmentTime ASC")
     List<Appointment> findUpcomingAppointments(@Param("currentTime") LocalDateTime currentTime);
